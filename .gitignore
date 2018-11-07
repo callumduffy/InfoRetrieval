@@ -9,6 +9,10 @@ buildNumber.properties
 .mvn/timing.properties
 .metadata/*
 .recommenders/*
+.settings/
+.classpath
+.project
+.DS_Store
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
