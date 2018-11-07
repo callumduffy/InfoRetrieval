@@ -46,9 +46,9 @@ public class SearchEngine
     	}
     	
     	iwriter.close();
-    	
     }
-    
+
+
     /**
      * Method to get all paths of files in a given directory
      * @param directory

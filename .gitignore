@@ -10,5 +10,10 @@ buildNumber.properties
 .metadata/*
 .recommenders/*
 
+searchengine/corpus/*
+
+/.settings
+searchengine/.idea/
+
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
