@@ -36,12 +36,12 @@ public class FTParser {
 		org.jsoup.nodes.Document jsoupDoc; 
 		
 		// Create a new field type which will store term vector information
-        FieldType ft = new FieldType(TextField.TYPE_STORED);
-        ft.setTokenized(true); //done as default
-        ft.setStoreTermVectors(true);
-        ft.setStoreTermVectorPositions(true);
-        ft.setStoreTermVectorOffsets(true);
-        ft.setStoreTermVectorPayloads(true);
+		FieldType ft = new FieldType(TextField.TYPE_STORED);
+		ft.setTokenized(true); //done as default
+		ft.setStoreTermVectors(true);
+		ft.setStoreTermVectorPositions(true);
+		ft.setStoreTermVectorOffsets(true);
+		ft.setStoreTermVectorPayloads(true);
 		
 		for(String path : filepaths){
 			
