@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.lucene.index.IndexWriter;
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
@@ -29,7 +30,7 @@ public class FTParser {
 	 * @return list of documents in directory, split by metadata
 	 * @throws IOException 
 	 */
-	public ArrayList<Document> loadDocs() throws IOException{
+	public void loadDocs(IndexWriter iwriter) throws IOException{
 		
 		File file;
 		Document luceneDoc;
@@ -67,12 +68,10 @@ public class FTParser {
 				luceneDoc.add(new Field("page", docElement.getElementsByTag("PAGE").text(), ft));
 				
 				System.out.println("Adding doc: " + docElement.getElementsByTag("DOCNO").text());
-				
-				docs.add(luceneDoc);
+
+				iwriter.addDocument(luceneDoc);
 			}
 		}
-		
-		return docs;
 	}
 	
 }

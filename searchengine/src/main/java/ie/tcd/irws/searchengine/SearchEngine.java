@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import ie.tcd.irws.searchengine.parsers.FBISParser;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -21,11 +23,12 @@ public class SearchEngine
 	private static Directory indexDirectory;
 	
 	private static String FT_DIR = "corpus/ft";
+	private static String FBIS_DIR = "corpus/fbis";
 	private static String INDEX_DIR = "index";
 	
     public static void main( String[] args ) throws IOException{
     	
-    	Analyzer analyzer = new StandardStemAnalyzer();
+    	Analyzer analyzer = new StandardAnalyzer();
     	indexDirectory = FSDirectory.open(Paths.get(INDEX_DIR));
     	
     	 // create and configure an index writer
@@ -35,15 +38,14 @@ public class SearchEngine
     	
     	//prepare for use when FTParser is complete
     	FTParser ftp = new FTParser(getFilePaths(FT_DIR));
-    	documents = ftp.loadDocs();
+    	ftp.loadDocs(iwriter);
     	
     	//from here on, append your documents to the list
-    	
-    	
-    	//index the whole list of docs
-    	for(Document doc : documents){
-    		iwriter.addDocument(doc);
-    	}
+
+		// FBIS
+		FBISParser fbisp = new FBISParser(getFilePaths(FBIS_DIR));
+		fbisp.loadDocs(iwriter);
+
     	
     	iwriter.close();
     }
