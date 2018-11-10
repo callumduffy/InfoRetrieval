@@ -1,3 +1,19 @@
+package ie.tcd.irws.searchengine.parsers;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.jsoup.Jsoup;
+import org.jsoup.select.Elements;
+import org.jsoup.nodes.Element;
+
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.TextField;
+
+//Parser for LA Times
 public class LAParser {
 
     private String[] filepaths;
