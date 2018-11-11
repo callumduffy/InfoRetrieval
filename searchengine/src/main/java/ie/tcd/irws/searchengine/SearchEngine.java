@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
 import ie.tcd.irws.searchengine.parsers.FBISParser;
+import ie.tcd.irws.searchengine.parsers.FRParser;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
@@ -23,7 +22,9 @@ public class SearchEngine
 	private static Directory indexDirectory;
 	
 	private static String FT_DIR = "corpus/ft";
-	private static String FBIS_DIR = "corpus/fbis";
+	private static String FR_DIR = "corpus/fr94";
+	private static String LA_DIR = "corpus/fr94";
+	private static String FBIS_DIR = "corpus/latimes";
 	private static String INDEX_DIR = "index";
 	
     public static void main( String[] args ) throws IOException{
@@ -36,11 +37,17 @@ public class SearchEngine
         config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
         IndexWriter iwriter = new IndexWriter(indexDirectory, config);
     	
-    	//prepare for use when FTParser is complete
-    	//FTParser ftp = new FTParser(getFilePaths(FT_DIR));
-    	//ftp.loadDocs(iwriter);
-    	
-    	//from here on, append your documents to the list
+    	// FT
+    	FTParser ftp = new FTParser(getFilePaths(FT_DIR));
+    	ftp.loadDocs(iwriter);
+
+		// FR
+		FRParser frp = new FRParser(getFilePaths(FR_DIR));
+		frp.loadDocs(iwriter);
+
+		// LA
+		FRParser lap = new FRParser(getFilePaths(LA_DIR));
+		lap.loadDocs(iwriter);
 
 		// FBIS
 		FBISParser fbisp = new FBISParser(getFilePaths(FBIS_DIR));
