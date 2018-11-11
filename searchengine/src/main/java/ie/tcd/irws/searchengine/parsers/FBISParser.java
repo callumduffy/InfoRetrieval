@@ -39,15 +39,12 @@ public class FBISParser {
             file = new File(path);
 
             System.out.println("Parsing file: " + path);
-            org.jsoup.nodes.Document jsoupDoc = null;
-            jsoupDoc = Jsoup.parse(file, "UTF-8", "");
+            org.jsoup.nodes.Document jsoupDoc = Jsoup.parse(file, "UTF-8", "");
 
             Elements jsoupDocs = jsoupDoc.getElementsByTag("DOC");
 
             for(Element docElement : jsoupDocs){
                 luceneDoc = new Document();
-
-                luceneDoc.add(new Field("title", docElement.getElementsByTag("TI").text(), ft));
 
                 String text = docElement.getElementsByTag("TEXT").text();
                 /* where possible, get the main text.
@@ -60,11 +57,11 @@ public class FBISParser {
                     text = text.substring(text.indexOf("[Text]")+6);
                 }
                 luceneDoc.add(new Field("text", text, ft));
+                luceneDoc.add(new Field("title", docElement.getElementsByTag("TI").text(), ft));
 
                 //stringFields
                 luceneDoc.add(new StringField("docno", docElement.getElementsByTag("DOCNO").text(), Field.Store.YES));
                 luceneDoc.add(new StringField("date", docElement.getElementsByTag("DATE1").text(), Field.Store.YES));
-                // The HT field comprises of an old ID system that was replaced by DOCNO
 
                 iwriter.addDocument(luceneDoc);
             }
