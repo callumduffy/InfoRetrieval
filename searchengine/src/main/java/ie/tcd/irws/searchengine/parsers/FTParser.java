@@ -48,7 +48,6 @@ public class FTParser {
 			
 			file = new File(path);
 			jsoupDoc = Jsoup.parse(file, "UTF-8");
-			luceneDoc = new Document();
 			
 			Elements jsoupDocs = jsoupDoc.getElementsByTag("DOC");
 			
@@ -56,6 +55,7 @@ public class FTParser {
 			System.out.println("Parsing file: " + path);
 			
 			for(Element docElement : jsoupDocs){
+				luceneDoc = new Document();
 				
 				luceneDoc.add(new Field("docno", docElement.getElementsByTag("DOCNO").text(), ft));
 				luceneDoc.add(new Field("profile", docElement.getElementsByTag("PROFILE").text(), ft));
