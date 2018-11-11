@@ -52,9 +52,9 @@ public class SearchEngine
 		FTParser ftp = new FTParser(getFilePaths(FT_DIR));
 		ftp.loadDocs(iwriter);
 
-		// FR - Stops at file number 459? - seems to enter infinite loop in JSoup
-		//FRParser frp = new FRParser(getFilePaths(FR_DIR));
-		//frp.loadDocs(iwriter);
+		// FR 
+		FRParser frp = new FRParser(getFilePaths(FR_DIR));
+		frp.loadDocs(iwriter);
 
 		// LA
 		LAParser lap = new LAParser(getFilePaths(LA_DIR));

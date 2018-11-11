@@ -15,7 +15,7 @@ import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 
-//Parser going to be used for the Financial Register dataset
+//Parser going to be used for the Federal Register dataset
 //General structure for file in this dataset:
 /*
 <DOC>
@@ -73,7 +73,8 @@ public class FRParser {
         
 		File file;
 		Document luceneDoc;
-		org.jsoup.nodes.Document jsoupDoc; 
+        org.jsoup.nodes.Document jsoupDoc; 
+        String docno;
 		
 		// Create a new field type which will store term vector information
 		FieldType ft = new FieldType(TextField.TYPE_STORED);
@@ -86,8 +87,6 @@ public class FRParser {
         int counter = 1;
 		for(String path : filepaths){
             
-            System.out.println("Indexing file number " + counter + " in the fr dataset out of " + filepaths.length);
-            counter++;
 			file = new File(path);
 			jsoupDoc = Jsoup.parse(file, "UTF-8");
 			
@@ -95,8 +94,11 @@ public class FRParser {
 			
 
 			for(Element docElement : jsoupDocs){
+                docno = docElement.getElementsByTag("DOCNO").text();
+                System.out.println("Indexing document " + docno + " number " + counter + " out of 55632 fr docs");
+                counter++;
                 luceneDoc = new Document();
-                luceneDoc.add(new Field("docno", docElement.getElementsByTag("DOCNO").text(), ft));
+                luceneDoc.add(new Field("docno", docno, ft));
 
                 Element text = docElement.getElementsByTag("TEXT").first();
                 if (text == null) {

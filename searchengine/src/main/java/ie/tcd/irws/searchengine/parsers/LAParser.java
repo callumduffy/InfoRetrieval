@@ -43,14 +43,14 @@ public class LAParser {
                 for(String path: filepaths) {
                     file = new File(path);
                     jsoupDoc = Jsoup.parse(file, "UTF-8");
-                    luceneDoc = new Document();
+                    
 
 
                     Elements jsoupDocs = jsoupDoc.getElementsByTag("DOC");
                     for(Element docElement : jsoupDocs){
 
                 //Adding the most relevant text fields
-
+                        luceneDoc = new Document();
                         luceneDoc.add(new Field("docNo", docElement.getElementsByTag("DOCNO").text(), ft));
                         luceneDoc.add(new Field("docID", docElement.getElementsByTag("DOCID").text(), ft));
                         luceneDoc.add(new Field("date", docElement.getElementsByTag("DATE").text(), ft));
