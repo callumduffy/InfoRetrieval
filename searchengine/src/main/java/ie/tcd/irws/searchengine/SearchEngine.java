@@ -17,9 +17,9 @@ import org.apache.lucene.store.FSDirectory;
 
 import ie.tcd.irws.searchengine.parsers.FTParser;
 
+
 public class SearchEngine 
 {
-	private static ArrayList<Document> documents = new ArrayList<Document>();
 	private static Directory indexDirectory;
 	
 	private static String FT_DIR = "corpus/ft";
@@ -37,8 +37,8 @@ public class SearchEngine
         IndexWriter iwriter = new IndexWriter(indexDirectory, config);
     	
     	//prepare for use when FTParser is complete
-    	FTParser ftp = new FTParser(getFilePaths(FT_DIR));
-    	ftp.loadDocs(iwriter);
+    	//FTParser ftp = new FTParser(getFilePaths(FT_DIR));
+    	//ftp.loadDocs(iwriter);
     	
     	//from here on, append your documents to the list
 

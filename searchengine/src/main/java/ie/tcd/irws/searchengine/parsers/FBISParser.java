@@ -11,13 +11,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class FBISParser {
-
     private String[] filepaths;
-    private ArrayList<Document> docs;
 
     public FBISParser(String[] filepaths){
         this.filepaths = filepaths;
-        this.docs = new ArrayList<>();
     }
 
     /**
@@ -37,27 +34,37 @@ public class FBISParser {
         ft.setStoreTermVectorOffsets(true);
         ft.setStoreTermVectorPayloads(true);
 
+
         for(String path : filepaths){
             file = new File(path);
-            luceneDoc = new Document();
 
+            System.out.println("Parsing file: " + path);
             org.jsoup.nodes.Document jsoupDoc = null;
             jsoupDoc = Jsoup.parse(file, "UTF-8", "");
 
             Elements jsoupDocs = jsoupDoc.getElementsByTag("DOC");
 
-            //test output prints
-            System.out.println("Parsing file: " + path);
-
             for(Element docElement : jsoupDocs){
-                luceneDoc.add(new Field("text", docElement.getElementsByTag("TEXT").text(), ft));
+                luceneDoc = new Document();
+
+                luceneDoc.add(new Field("title", docElement.getElementsByTag("TI").text(), ft));
+
+                String text = docElement.getElementsByTag("TEXT").text();
+                /* where possible, get the main text.
+                 * Removes some noise. E.g:
+                 * Language: Macedonian
+                 * Article Type:CSO
+                 * [Article by V.V.A.: "The Law on the Census Is Ready, but... Fear of Politicized Count"]
+                 */
+                if(text.contains("[Text]")) {
+                    text = text.substring(text.indexOf("[Text]")+6);
+                }
+                luceneDoc.add(new Field("text", text, ft));
 
                 //stringFields
                 luceneDoc.add(new StringField("docno", docElement.getElementsByTag("DOCNO").text(), Field.Store.YES));
                 luceneDoc.add(new StringField("date", docElement.getElementsByTag("DATE1").text(), Field.Store.YES));
-                luceneDoc.add(new StringField("ht", docElement.getElementsByTag("HT").text(), Field.Store.YES));
-
-                System.out.println("Adding doc: " + docElement.getElementsByTag("DOCNO").text());
+                // The HT field comprises of an old ID system that was replaced by DOCNO
 
                 iwriter.addDocument(luceneDoc);
             }
