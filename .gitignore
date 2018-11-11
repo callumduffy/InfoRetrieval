@@ -14,5 +14,11 @@ buildNumber.properties
 .project
 .DS_Store
 
+searchengine/corpus/*
+searchengine/index/*
+
+/.settings
+searchengine/.idea/
+
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar

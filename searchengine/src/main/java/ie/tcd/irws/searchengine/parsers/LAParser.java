@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.lucene.index.IndexWriter;
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Element;
@@ -17,15 +18,12 @@ import org.apache.lucene.document.TextField;
 public class LAParser {
 
     private String[] filepaths;
-    private ArrayList<Document> docs;
 
     public LAParser(String[] filepaths){
         this.filepaths = filepaths;
-        System.out.println(filepaths);
-        this.docs = new ArrayList<Document>();
     }
 
-    public ArrayList<Document> loadDocs() throws IOException {
+    public void loadDocs(IndexWriter iwriter) throws IOException {
 
 
                 File file;
@@ -65,17 +63,10 @@ public class LAParser {
 
                         System.out.println("Adding doc: " + docElement.getElementsByTag("DOCNO").text());
 
-                        docs.add(luceneDoc);
-
+                        iwriter.addDocument(luceneDoc);
                     }
-
-
-
                 }
-                return docs;
-
     }
-
 }
 
 
