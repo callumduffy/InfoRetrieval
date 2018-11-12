@@ -73,14 +73,13 @@ public class QueryHandler {
     {
         List<ScoreDoc[]>  results = new ArrayList<>();
 
-        //Clear results file
+        //PrintWriter for writing to results file
         PrintWriter pw = new PrintWriter(Paths.get(trecPath).toAbsolutePath().toString());
         
         for (HashMap query : queries) {
             
-            //BooleanQuery.Builder queryString = createQuery(query);
-            String query_string = query.get("desc").toString();
-            ScoreDoc[] queryResults = runQuery(query_string);
+            BooleanQuery.Builder queryString = createQuery(query);
+            ScoreDoc[] queryResults = runQuery(queryString);
             results.add(queryResults);
 
             //If the results are to be saved to trec_eval file
@@ -97,7 +96,7 @@ public class QueryHandler {
         return results;
     }
 
-    private BooleanQuery.Builder createQuery(HashMap<String, String> topicMap)
+    private BooleanQuery.Builder createQuery(HashMap<String, String> topicMap) throws ParseException
     {
         /*
         Field Names:
@@ -112,10 +111,13 @@ public class QueryHandler {
         String titleText = escapeSpecialCharacters(topicMap.get("title"));
 
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
-        Query query1 = (new TermQuery(new Term("text", descText)));
+        QueryParser qp1 = new QueryParser("text", analyzer);
+        Query query1 = qp1.parse(descText);
         query1 = new BoostQuery(query1, (float)0.5);
+        
 
-        Query query2 = new TermQuery(new Term("text", titleText));
+        QueryParser qp2 = new QueryParser("text", analyzer);
+        Query query2 = qp2.parse(titleText);
         query2 = new BoostQuery(query2, (float)1.5);
 
         bq.add(query1, BooleanClause.Occur.SHOULD);
@@ -147,13 +149,11 @@ public class QueryHandler {
         return s;
     }
 
-    private ScoreDoc[] runQuery(String query_string) throws IOException, ParseException {
+    private ScoreDoc[] runQuery(BooleanQuery.Builder query_string) throws IOException, ParseException {
 
         ScoreDoc[] hits;
-        query_string = QueryParserBase.escape(query_string).trim();
-        Query q = new QueryParser("text", analyzer).parse(query_string);
         try {
-            hits = isearcher.search(q, maxResults).scoreDocs;
+            hits = isearcher.search(query_string.build(), maxResults).scoreDocs;
         } catch (IOException e) {
             throw new IOException("An error occurred while searching the index.");
         }
