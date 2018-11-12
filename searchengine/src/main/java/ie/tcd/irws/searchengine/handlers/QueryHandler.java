@@ -1,11 +1,15 @@
-package ie.tcd.irws.searchengine.parsers;
+package ie.tcd.irws.searchengine.handlers;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
+import org.apache.lucene.search.BoostQuery;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -26,11 +30,13 @@ public class QueryHandler {
     private DirectoryReader ireader;
     private IndexSearcher isearcher;
 
-    QueryHandler(String t_indexDirectory, Analyzer t_analyzer, int t_maxResults ) throws IOException {
+    public QueryHandler(String t_indexDirectory, Analyzer t_analyzer, int t_maxResults ) throws IOException {
         indexDirectoryPath = t_indexDirectory;
         analyzer = t_analyzer;
         maxResults = t_maxResults;
         initQueryHandler();
+        
+        
     }
 
     private void initQueryHandler() throws IOException
@@ -63,9 +69,12 @@ public class QueryHandler {
     {
         List<ScoreDoc[]>  results = new ArrayList<>();
         for (HashMap query : queries) {
+            
             BooleanQuery.Builder queryString = createQuery(query);
+
             ScoreDoc[] queryResults = runQuery(queryString);
             results.add(queryResults);
+            
         }
         return results;
     }
@@ -75,11 +84,26 @@ public class QueryHandler {
         /*
         Field Names:
             text
-
+            date
+            docno
+            *More to be added*
         */
+        
+        String descText = escapeSpecialCharacters(topicMap.get("desc"));
+        String narrText = escapeSpecialCharacters(topicMap.get("narr")); //To be seperated into should/should not
+        String titleText = escapeSpecialCharacters(topicMap.get("title"));
+
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
+        Query query1 = (new TermQuery(new Term("text", descText)));
+        query1 = new BoostQuery(query1, (float)0.5);
+
+        Query query2 = new TermQuery(new Term("text", titleText));
+        query2 = new BoostQuery(query2, (float)1.5);
+
+        bq.add(query1, BooleanClause.Occur.SHOULD);
+        bq.add(query2, BooleanClause.Occur.SHOULD);
         //Build Boolean Query
-        String descText = topicMap.get("desc");
+        
         return bq;
     }
 
@@ -108,8 +132,9 @@ public class QueryHandler {
     private ScoreDoc[] runQuery(BooleanQuery.Builder query) throws IOException, ParseException {
 
         ScoreDoc[] hits;
+        Query q = new QueryParser("text", analyzer).parse(query.toString());
         try {
-            hits = isearcher.search(query.build(), maxResults).scoreDocs;
+            hits = isearcher.search(q, maxResults).scoreDocs;
         } catch (IOException e) {
             throw new IOException("An error occurred while searching the index.");
         }

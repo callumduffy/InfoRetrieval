@@ -2,7 +2,6 @@ package ie.tcd.irws.searchengine.parsers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.apache.lucene.index.IndexWriter;
 import org.jsoup.Jsoup;
@@ -18,11 +17,9 @@ import org.apache.lucene.document.TextField;
 public class FTParser {
 	
 	private String[] filepaths;
-	private ArrayList<Document> docs;
 	
 	public FTParser(String[] filepaths){
 		this.filepaths = filepaths;
-		this.docs = new ArrayList<Document>();
 	}
 	
 	/**
