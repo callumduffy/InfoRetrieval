@@ -1,5 +1,6 @@
 package ie.tcd.irws.searchengine.handlers;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -8,10 +9,10 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.apache.lucene.search.BoostQuery;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,15 +26,17 @@ public class QueryHandler {
     // Limit the number of search results we get
     private int maxResults;
     private Analyzer analyzer;
+    private String trecPath;
 
     private Directory indexDirectory;
     private DirectoryReader ireader;
     private IndexSearcher isearcher;
 
-    public QueryHandler(String t_indexDirectory, Analyzer t_analyzer, int t_maxResults ) throws IOException {
+    public QueryHandler(String t_indexDirectory, Analyzer t_analyzer, int t_maxResults , String t_trecPath) throws IOException {
         indexDirectoryPath = t_indexDirectory;
         analyzer = t_analyzer;
         maxResults = t_maxResults;
+        trecPath = t_trecPath;
         initQueryHandler();
         
         
@@ -65,17 +68,31 @@ public class QueryHandler {
         isearcher.setSimilarity(similarity);
     }
 
-    public List<ScoreDoc[]> query(List<HashMap<String, String>> queries) throws IOException, ParseException
+    public List<ScoreDoc[]> query(List<HashMap<String, String>> queries, Boolean evaluate) throws IOException, ParseException
     {
         List<ScoreDoc[]>  results = new ArrayList<>();
+
+        //Clear results file
+        PrintWriter pw = new PrintWriter(Paths.get(trecPath).toAbsolutePath().toString());
+        
         for (HashMap query : queries) {
             
             BooleanQuery.Builder queryString = createQuery(query);
 
             ScoreDoc[] queryResults = runQuery(queryString);
             results.add(queryResults);
-            
+
+            //If the results are to be saved to trec_eval file
+            if (evaluate == true){
+                for (int i = 0; i < queryResults.length; i++) {
+                    Document d = isearcher.doc(queryResults[i].doc);
+                    String docno = d.get("docno");
+        
+                    pw.println(query.get("num") + " Q0 "+docno+" "+( i + 1) +" "+queryResults[i].score+" "+"0");
+                }
+            }
         }
+        pw.close();
         return results;
     }
 
