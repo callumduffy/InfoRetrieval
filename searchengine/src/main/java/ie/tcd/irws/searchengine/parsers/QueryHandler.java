@@ -2,7 +2,6 @@ package ie.tcd.irws.searchengine.parsers;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
@@ -64,17 +63,24 @@ public class QueryHandler {
     {
         List<ScoreDoc[]>  results = new ArrayList<>();
         for (HashMap query : queries) {
-            String queryString = createQueryString(query);
-            ScoreDoc[] queryResults = query(queryString);
+            BooleanQuery.Builder queryString = createQuery(query);
+            ScoreDoc[] queryResults = runQuery(queryString);
             results.add(queryResults);
         }
         return results;
     }
 
-    private String createQueryString(HashMap<String, String> topicMap)
+    private BooleanQuery.Builder createQuery(HashMap<String, String> topicMap)
     {
+        /*
+        Field Names:
+            text
+
+        */
+        BooleanQuery.Builder bq = new BooleanQuery.Builder();
+        //Build Boolean Query
         String descText = topicMap.get("desc");
-        return escapeSpecialCharacters(descText);
+        return bq;
     }
 
     private String escapeSpecialCharacters(String s){
@@ -99,23 +105,11 @@ public class QueryHandler {
         return s;
     }
 
-    private ScoreDoc[] query(String queryString) throws IOException, ParseException {
-
-        QueryParser parser = new QueryParser("content", analyzer);
-        Query query;
-        try {
-            System.out.println("Querying "+ queryString);
-            query = parser.parse(queryString);
-
-        } catch (ParseException e) {
-            throw new ParseException("An error occurred while parsing the query string.");
-        }
+    private ScoreDoc[] runQuery(BooleanQuery.Builder query) throws IOException, ParseException {
 
         ScoreDoc[] hits;
-
-        // Get the set of results
         try {
-            hits = isearcher.search(query, maxResults).scoreDocs;
+            hits = isearcher.search(query.build(), maxResults).scoreDocs;
         } catch (IOException e) {
             throw new IOException("An error occurred while searching the index.");
         }
