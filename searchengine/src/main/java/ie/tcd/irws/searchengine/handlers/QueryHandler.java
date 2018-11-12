@@ -5,6 +5,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
@@ -77,9 +78,9 @@ public class QueryHandler {
         
         for (HashMap query : queries) {
             
-            BooleanQuery.Builder queryString = createQuery(query);
-
-            ScoreDoc[] queryResults = runQuery(queryString);
+            //BooleanQuery.Builder queryString = createQuery(query);
+            String query_string = query.get("desc").toString();
+            ScoreDoc[] queryResults = runQuery(query_string);
             results.add(queryResults);
 
             //If the results are to be saved to trec_eval file
@@ -146,10 +147,11 @@ public class QueryHandler {
         return s;
     }
 
-    private ScoreDoc[] runQuery(BooleanQuery.Builder query) throws IOException, ParseException {
+    private ScoreDoc[] runQuery(String query_string) throws IOException, ParseException {
 
         ScoreDoc[] hits;
-        Query q = new QueryParser("text", analyzer).parse(query.toString());
+        query_string = QueryParserBase.escape(query_string).trim();
+        Query q = new QueryParser("text", analyzer).parse(query_string);
         try {
             hits = isearcher.search(q, maxResults).scoreDocs;
         } catch (IOException e) {

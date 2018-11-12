@@ -9,7 +9,6 @@ import java.util.List;
 
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -63,11 +62,7 @@ public class SearchEngine
 		catch(ParseException e){
 			throw new ParseException("An error occured while parsing the queries");
 		}
-		for (ScoreDoc[] r: results){
-			for(ScoreDoc s: r){
-
-			}
-		}
+		
 		
     }
 
