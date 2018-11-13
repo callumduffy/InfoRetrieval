@@ -4,18 +4,27 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.*;
+
+
+import ie.tcd.irws.searchengine.parsers.FTParser;
 import ie.tcd.irws.searchengine.parsers.FBISParser;
 import ie.tcd.irws.searchengine.parsers.FRParser;
 import ie.tcd.irws.searchengine.parsers.LAParser;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import ie.tcd.irws.searchengine.handlers.QueryHandler;
+import ie.tcd.irws.searchengine.parsers.QueryParser;
 
-import ie.tcd.irws.searchengine.parsers.FTParser;
 
 
 public class SearchEngine 
@@ -27,13 +36,34 @@ public class SearchEngine
 	private static String LA_DIR = "corpus/latimes";
 	private static String FBIS_DIR = "corpus/fbis";
 	private static String INDEX_DIR = "index";
+	private static String QUERY_DIR = "corpus/topics.txt";
+	private static String TREC_PATH = "evaluation/results.txt";
+	private static int MAX_RESULTS = 1000;
 	
-    public static void main( String[] args ) throws IOException {
-    	
-    	Analyzer analyzer = new StandardAnalyzer();
-    	indexDirectory = FSDirectory.open(Paths.get(INDEX_DIR));
+    public static void main( String[] args ) throws IOException, ParseException {
+		
+		List<ScoreDoc[]>  results;
 
-    	buildIndex(analyzer);
+    	Analyzer analyzer = new StandardStemAnalyzer();
+		indexDirectory = FSDirectory.open(Paths.get(INDEX_DIR));
+		System.out.println("(Re)build the index? y/n");
+		if (System.console().readLine().equals("y")){
+			buildIndex(analyzer);
+		}
+		QueryHandler handler = new QueryHandler(Paths.get(INDEX_DIR).toAbsolutePath().toString(), analyzer, MAX_RESULTS, TREC_PATH);
+		handler.setSimilarityMethod(new BM25Similarity());
+		QueryParser p = new QueryParser(Paths.get(QUERY_DIR).toAbsolutePath().toString());
+		try{
+			results = handler.query(p.loadTopics(), true);
+		}
+		catch (IOException e) {
+            throw new IOException("An error occurred while opening the queries.");
+		}
+		catch(ParseException e){
+			throw new ParseException("An error occured while parsing the queries");
+		}
+		
+		
     }
 
 	/**

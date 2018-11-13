@@ -1,13 +1,22 @@
-package ie.tcd.irws.searchengine.parsers;
+package ie.tcd.irws.searchengine.handlers;
+import ie.tcd.irws.searchengine.Utils;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.search.BoostQuery;
 
+import javax.rmi.CORBA.Util;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,16 +30,20 @@ public class QueryHandler {
     // Limit the number of search results we get
     private int maxResults;
     private Analyzer analyzer;
+    private String trecPath;
 
     private Directory indexDirectory;
     private DirectoryReader ireader;
     private IndexSearcher isearcher;
 
-    QueryHandler(String t_indexDirectory, Analyzer t_analyzer, int t_maxResults ) throws IOException {
+    public QueryHandler(String t_indexDirectory, Analyzer t_analyzer, int t_maxResults , String t_trecPath) throws IOException {
         indexDirectoryPath = t_indexDirectory;
         analyzer = t_analyzer;
         maxResults = t_maxResults;
+        trecPath = t_trecPath;
         initQueryHandler();
+        
+        
     }
 
     private void initQueryHandler() throws IOException
@@ -59,27 +72,69 @@ public class QueryHandler {
         isearcher.setSimilarity(similarity);
     }
 
-    public List<ScoreDoc[]> query(List<HashMap<String, String>> queries) throws IOException, ParseException
+    public List<ScoreDoc[]> query(List<HashMap<String, String>> queries, Boolean evaluate) throws IOException, ParseException
     {
         List<ScoreDoc[]>  results = new ArrayList<>();
+
+        //PrintWriter for writing to results file
+        PrintWriter pw = new PrintWriter(Paths.get(trecPath).toAbsolutePath().toString());
+        
         for (HashMap query : queries) {
+            
             BooleanQuery.Builder queryString = createQuery(query);
             ScoreDoc[] queryResults = runQuery(queryString);
             results.add(queryResults);
+
+            //If the results are to be saved to trec_eval file
+            if (evaluate == true){
+                for (int i = 0; i < queryResults.length; i++) {
+                    Document d = isearcher.doc(queryResults[i].doc);
+                    String docno = d.get("docno");
+        
+                    pw.println(query.get("num") + " Q0 "+docno+" "+( i + 1) +" "+queryResults[i].score+" "+"0");
+                }
+            }
         }
+        pw.close();
         return results;
     }
 
-    private BooleanQuery.Builder createQuery(HashMap<String, String> topicMap)
+    private BooleanQuery.Builder createQuery(HashMap<String, String> topicMap) throws ParseException, IOException
     {
         /*
         Field Names:
             text
-
+            date
+            docno
+            *More to be added*
         */
+        
+        String descText = escapeSpecialCharacters(topicMap.get("desc"));
+        String narrText = escapeSpecialCharacters(topicMap.get("narr")); //To be seperated into should/should not
+        String titleText = escapeSpecialCharacters(topicMap.get("title"));
+
+        /**
+         *  relevantTerms.get(0) -> RELEVANT TERMS
+         *  relevantTerms.get(1) -> IRRRELEVANT TERMS
+         */
+        ArrayList<ArrayList<String>> relevantTerms = Utils.getRelevantTerms(topicMap.get("narr"));
+
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
+        // TODO - add relevant and irrelevant terms to bq
+
+        QueryParser qp1 = new QueryParser("text", analyzer);
+        Query query1 = qp1.parse(descText);
+        query1 = new BoostQuery(query1, (float)0.5);
+        
+
+        QueryParser qp2 = new QueryParser("text", analyzer);
+        Query query2 = qp2.parse(titleText);
+        query2 = new BoostQuery(query2, (float)1.5);
+
+        bq.add(query1, BooleanClause.Occur.SHOULD);
+        bq.add(query2, BooleanClause.Occur.SHOULD);
         //Build Boolean Query
-        String descText = topicMap.get("desc");
+        
         return bq;
     }
 
@@ -105,11 +160,11 @@ public class QueryHandler {
         return s;
     }
 
-    private ScoreDoc[] runQuery(BooleanQuery.Builder query) throws IOException, ParseException {
+    private ScoreDoc[] runQuery(BooleanQuery.Builder query_string) throws IOException, ParseException {
 
         ScoreDoc[] hits;
         try {
-            hits = isearcher.search(query.build(), maxResults).scoreDocs;
+            hits = isearcher.search(query_string.build(), maxResults).scoreDocs;
         } catch (IOException e) {
             throw new IOException("An error occurred while searching the index.");
         }

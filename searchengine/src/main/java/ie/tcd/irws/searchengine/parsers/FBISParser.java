@@ -8,7 +8,6 @@ import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class FBISParser {
     private String[] filepaths;

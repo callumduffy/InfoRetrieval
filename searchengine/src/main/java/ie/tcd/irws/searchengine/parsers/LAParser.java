@@ -2,7 +2,6 @@ package ie.tcd.irws.searchengine.parsers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.apache.lucene.index.IndexWriter;
 import org.jsoup.Jsoup;
@@ -51,7 +50,7 @@ public class LAParser {
 
                 //Adding the most relevant text fields
                         luceneDoc = new Document();
-                        luceneDoc.add(new Field("docNo", docElement.getElementsByTag("DOCNO").text(), ft));
+                        luceneDoc.add(new Field("docno", docElement.getElementsByTag("DOCNO").text(), ft));
                         luceneDoc.add(new Field("docID", docElement.getElementsByTag("DOCID").text(), ft));
                         luceneDoc.add(new Field("date", docElement.getElementsByTag("DATE").text(), ft));
                         luceneDoc.add(new Field("section", docElement.getElementsByTag("SECTION").text(), ft));
