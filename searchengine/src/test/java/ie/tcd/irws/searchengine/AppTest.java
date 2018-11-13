@@ -48,8 +48,7 @@ public class AppTest
      * getIrrelevantTerms TESTS
      */
     public ArrayList<ArrayList<String>> getRelevantTermsHelper(String narr) throws IOException {
-        QueryParser p = new QueryParser("");
-        ArrayList<ArrayList<String>> result = p.getRelevantTerms(narr);
+        ArrayList<ArrayList<String>> result = Utils.getRelevantTerms(narr);
         System.out.println();
         System.out.println("NARR:\n" + narr);
         System.out.println("RELEVANT TERMS: \n" + result.get(0).toString());
@@ -57,15 +56,18 @@ public class AppTest
         return result;
     }
 
-
+    /**
+     * Close..
+     */
     public void testGetRelevantTerms401() throws IOException {
         String narr = "A relevant document will focus on the causes of the lack of\n" +
                 "integration in a significant way; that is, the mere mention of\n" +
                 "immigration difficulties is not relevant.  Documents that discuss\n" +
                 "immigration problems unrelated to Germany are also not relevant.";
         ArrayList<ArrayList<String>> result = getRelevantTermsHelper(narr);
-        assertTrue(result.get(0).toString().equals("[focus, causes, lack, integration, significant, way, Germany]"));
-        assertTrue(result.get(1).toString().equals("[*NOT Germany*]"));
+        // The term "Germany" MUST occur
+        assertTrue(result.get(0).toString().equals("[causes, lack, integration, immigration, problems, germany]"));
+        assertTrue(result.get(1).toString().equals("[difficulties]"));
     }
 
     public void testGetRelevantTerms402() throws IOException {
@@ -77,8 +79,27 @@ public class AppTest
                 "when tied in with behavior disorders (i.e., mood disorders,\n" +
                 "Alzheimer's disease). ";
         ArrayList<ArrayList<String>> result = getRelevantTermsHelper(narr);
-        assertTrue(result.get(0).toString().equals("[focus, causes, lack, integration, significant, way, Germany]"));
-        assertTrue(result.get(1).toString().equals("[*NOT Germany*]"));
+        assertTrue(result.get(0).toString().equals("[genetic, environmental, factors, understanding, preventing, substance, abuse, addictions, pertaining, attention, deficit, disorders, tied, genetics, affecting, hearing, muscles, genome, project, behavior, mood, alzheimer's, disease]"));
+        assertTrue(result.get(1).toString().equals("[]"));
+    }
+
+    public void testGetRelevantTerms403() throws IOException {
+        String narr = "A relevant document may include one or more of the\n" +
+                "dietary intakes in the prevention of osteoporosis.\n" +
+                "Any discussion of the disturbance of nutrition and\n" +
+                "mineral metabolism that results in a decrease in \n" +
+                "bone mass is also relevant.";
+        ArrayList<ArrayList<String>> result = getRelevantTermsHelper(narr);
+        assertTrue(result.get(0).toString().equals("[dietary, intakes, prevention, osteoporosis, discussion, disturbance, nutrition, mineral, metabolism, results, decrease, bone, mass]"));
+        assertTrue(result.get(1).toString().equals("[]"));
+    }
+
+    public void testGetRelevantTerms404() throws IOException {
+        String narr = "Any interruptions to the peace process not directly\n" +
+                "attributable to acts of violence are not relevant.";
+        ArrayList<ArrayList<String>> result = getRelevantTermsHelper(narr);
+        assertTrue(result.get(0).toString().equals("[interruptions, peace, process, directly, attributable, acts, violence]"));
+        assertTrue(result.get(1).toString().equals("[]"));
     }
 
     public void testGetRelevantTerms418() throws IOException {

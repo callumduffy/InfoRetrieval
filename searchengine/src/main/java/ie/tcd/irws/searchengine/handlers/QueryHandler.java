@@ -1,4 +1,5 @@
 package ie.tcd.irws.searchengine.handlers;
+import ie.tcd.irws.searchengine.Utils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -12,8 +13,10 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.search.BoostQuery;
 
+import javax.rmi.CORBA.Util;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +99,7 @@ public class QueryHandler {
         return results;
     }
 
-    private BooleanQuery.Builder createQuery(HashMap<String, String> topicMap) throws ParseException
+    private BooleanQuery.Builder createQuery(HashMap<String, String> topicMap) throws ParseException, IOException
     {
         /*
         Field Names:
@@ -110,7 +113,15 @@ public class QueryHandler {
         String narrText = escapeSpecialCharacters(topicMap.get("narr")); //To be seperated into should/should not
         String titleText = escapeSpecialCharacters(topicMap.get("title"));
 
+        /**
+         *  relevantTerms.get(0) -> RELEVANT TERMS
+         *  relevantTerms.get(1) -> IRRRELEVANT TERMS
+         */
+        ArrayList<ArrayList<String>> relevantTerms = Utils.getRelevantTerms(topicMap.get("narr"));
+
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
+        // TODO - add relevant and irrelevant terms to bq
+
         QueryParser qp1 = new QueryParser("text", analyzer);
         Query query1 = qp1.parse(descText);
         query1 = new BoostQuery(query1, (float)0.5);
