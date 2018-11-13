@@ -4,6 +4,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import ie.tcd.irws.searchengine.Utils;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,15 +44,26 @@ public class QueryParser {
             numText = numText.replace("Number: ", "");
             descText = descText.replace("Description: ", "");
             narrText = narrText.replace("Narrative: ", "");
-
+            ArrayList<ArrayList<String>> relUtilResult = Utils.getRelevantTerms(narrText);
+            String relText = stringArrayToString(relUtilResult.get(0));
+            String nRelText = stringArrayToString(relUtilResult.get(1));
 
             topic.put("num", numText);
             topic.put("title", titleText);
             topic.put("desc", descText);
             topic.put("narr", narrText);
+            topic.put("rel", relText);
+            topic.put("nRel", nRelText);
             topics.add(topic);
         }
         return topics;
+    }
+
+    private String stringArrayToString(ArrayList<String> input){
+        String result="";
+        for(String string:input)
+            result +=  " " + string; 
+        return result;
     }
 
 }

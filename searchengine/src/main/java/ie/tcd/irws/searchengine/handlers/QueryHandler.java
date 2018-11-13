@@ -1,5 +1,7 @@
 package ie.tcd.irws.searchengine.handlers;
+
 import ie.tcd.irws.searchengine.Utils;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -13,7 +15,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.search.BoostQuery;
 
-import javax.rmi.CORBA.Util;
+//import javax.rmi.CORBA.Util;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
@@ -112,6 +114,8 @@ public class QueryHandler {
         String descText = escapeSpecialCharacters(topicMap.get("desc"));
         String narrText = escapeSpecialCharacters(topicMap.get("narr")); //To be seperated into should/should not
         String titleText = escapeSpecialCharacters(topicMap.get("title"));
+        String relText = escapeSpecialCharacters(topicMap.get("rel"));
+        String nRelText = escapeSpecialCharacters(topicMap.get("nRel"));
 
         /**
          *  relevantTerms.get(0) -> RELEVANT TERMS
@@ -122,14 +126,32 @@ public class QueryHandler {
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
         // TODO - add relevant and irrelevant terms to bq
 
-        QueryParser qp1 = new QueryParser("text", analyzer);
-        Query query1 = qp1.parse(descText);
-        query1 = new BoostQuery(query1, (float)0.5);
+        QueryParser qp = new QueryParser("text", analyzer);
+        Query query1 = qp.parse(descText);
+        query1 = new BoostQuery(query1, (float)1);
         
 
-        QueryParser qp2 = new QueryParser("text", analyzer);
-        Query query2 = qp2.parse(titleText);
+        Query query2 = qp.parse(titleText);
         query2 = new BoostQuery(query2, (float)1.5);
+
+        //Relevant terms from narrative
+        if (relText.length() > 0){
+            Query query3 = qp.parse(relText);
+            query3 = new BoostQuery(query3, (float)0.5);
+            bq.add(query3, BooleanClause.Occur.SHOULD);
+        }
+
+        /* This piece of code brings down performance from 0.27 to 0.20, need to find alternative way 
+        of using non relevant terms
+        //Not relevant terms from narrative
+        if (nRelText.length() > 0){
+            Query query4 = qp.parse(nRelText);
+            query4 = new BoostQuery(query4, (float)0.5);
+            bq.add(query4, BooleanClause.Occur.MUST_NOT);
+        }
+        */
+        
+
 
         bq.add(query1, BooleanClause.Occur.SHOULD);
         bq.add(query2, BooleanClause.Occur.SHOULD);
@@ -157,6 +179,8 @@ public class QueryHandler {
         s = s.replace("*", "\\*");
         s = s.replace("?", "\\?");
         s = s.replace(":", "\\:");
+        s = s.replace("/", "\\/");
+
         return s;
     }
 

@@ -1,8 +1,9 @@
 package ie.tcd.irws.searchengine;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+//import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import ie.tcd.irws.searchengine.handlers.QueryHandler;
 import ie.tcd.irws.searchengine.parsers.QueryParser;
+import ie.tcd.irws.searchengine.Utils;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
