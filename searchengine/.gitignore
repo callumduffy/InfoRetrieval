@@ -15,7 +15,9 @@ corpus/
 .recommenders/*
 index/
 .DS_Store
-evaluation/
+evaluation/results.txt
+evaluation/.ipynb_checkpoints/
+evaluation/trec_results.txt
 
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
