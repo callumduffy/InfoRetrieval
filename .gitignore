@@ -16,6 +16,7 @@ buildNumber.properties
 
 searchengine/corpus/*
 searchengine/index/*
+searchengine/trec_eval/
 
 /.settings
 searchengine/.idea/
