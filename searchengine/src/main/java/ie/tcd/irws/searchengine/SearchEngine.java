@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -107,11 +108,25 @@ public class SearchEngine
      * @throws IOException
      */
     private static String[] getFilePaths(String directory) throws IOException{
-    	return Files.walk(Paths.get(directory))
-    			.filter(Files::isRegularFile)
-    			.map(Path::toAbsolutePath)
-    			.map(Path::toString)
-    			.toArray(String[]::new);
-    }
+		String[] all_files = Files.walk(Paths.get(directory))
+		.filter(Files::isRegularFile)
+		.map(Path::toAbsolutePath)
+		.map(Path::toString)
+		.toArray(String[]::new);
+    	return getNonReadmes(all_files);
+	}
+	private static String[] getNonReadmes(String[] input){
+
+		ArrayList<String> _result = new ArrayList<String>(Arrays.asList(input));
+		
+		for(String element: input){
+			if (element.toLowerCase().contains("read")){
+				_result.remove(element);
+			}
+		}
+		String[] result = new String[_result.size()];
+		_result.toArray(result);
+		return result;
+	}
     
 }
