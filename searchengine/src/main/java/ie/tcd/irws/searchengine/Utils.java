@@ -12,6 +12,24 @@ public class Utils {
     // path specifying the file containing terms to filter out during relevant/irrelevant term identification
     final static String RELEVANT_TERMS_FILTER_PATH = "relevant-stop.txt";
 
+
+    /**
+     * Method for extracting phrases from the given string
+     * @param text to delimit into phrases
+     * @return ArrayList of phrase Strings (special chars removed! (e.g '?', '!', "'"))
+     */
+    public static ArrayList<ArrayList<String>> getPhrases(String text) {
+        ArrayList<ArrayList<String>> ret = new ArrayList<>();
+        String[] terms = text.trim().replaceAll("[^A-Za-z0-9 ]", "").split("\\s+");
+        for(int i = 0; i < terms.length-1; i++) {
+            ArrayList<String> temp = new ArrayList<>();
+            temp.add(terms[i]);
+            temp.add(terms[i+1]);
+            ret.add(temp);
+        }
+        return ret;
+    }
+
     /**
      *  Method for finding irrelevant terms or terms that should not occur in the given string
      *  @param text to analyse

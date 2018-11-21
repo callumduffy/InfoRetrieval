@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 
 import org.apache.lucene.analysis.Analyzer;
@@ -46,8 +47,10 @@ public class SearchEngine
 
     	Analyzer analyzer = new StandardStemAnalyzer();
 		indexDirectory = FSDirectory.open(Paths.get(INDEX_DIR));
+		Scanner scanner = new Scanner(System.in);
 		System.out.println("(Re)build the index? y/n");
-		if (System.console().readLine().equals("y")){
+		String buildIndex = scanner.next();
+		if (buildIndex.equals("y")){
 			buildIndex(analyzer);
 		}
 		QueryHandler handler = new QueryHandler(Paths.get(INDEX_DIR).toAbsolutePath().toString(), analyzer, MAX_RESULTS, TREC_PATH);
