@@ -117,14 +117,8 @@ public class QueryHandler {
         String relText = escapeSpecialCharacters(topicMap.get("rel"));
         String nRelText = escapeSpecialCharacters(topicMap.get("nRel"));
 
-        /**
-         *  relevantTerms.get(0) -> RELEVANT TERMS
-         *  relevantTerms.get(1) -> IRRRELEVANT TERMS
-         */
-        ArrayList<ArrayList<String>> relevantTerms = Utils.getRelevantTerms(topicMap.get("narr"));
 
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
-        // TODO - add relevant and irrelevant terms to bq
 
         QueryParser qp = new QueryParser("text", analyzer);
         Query query1 = qp.parse(descText);
@@ -141,6 +135,8 @@ public class QueryHandler {
             bq.add(query3, BooleanClause.Occur.SHOULD);
         }
 
+
+
         /* This piece of code brings down performance from 0.27 to 0.20, need to find alternative way 
         of using non relevant terms
         //Not relevant terms from narrative
@@ -150,12 +146,16 @@ public class QueryHandler {
             bq.add(query4, BooleanClause.Occur.MUST_NOT);
         }
         */
-        
 
 
+        //Build Boolean Query
         bq.add(query1, BooleanClause.Occur.SHOULD);
         bq.add(query2, BooleanClause.Occur.SHOULD);
-        //Build Boolean Query
+        // add phrase queries
+        ArrayList<PhraseQuery> phraseQueries = constructPhraseQueries(descText);
+        for(int i = 0; i < phraseQueries.size(); i++) {
+            bq.add(phraseQueries.get(i), BooleanClause.Occur.SHOULD);
+        }
         
         return bq;
     }
@@ -183,6 +183,21 @@ public class QueryHandler {
 
         return s;
     }
+
+
+    private ArrayList<PhraseQuery> constructPhraseQueries(String text) {
+        ArrayList<PhraseQuery> ret = new ArrayList<>();
+        ArrayList<ArrayList<String>> phrases = Utils.getPhrases(text);
+        for(int i = 0; i < phrases.size(); i++) {
+            PhraseQuery.Builder builder = new PhraseQuery.Builder();
+            builder.add(new Term("", phrases.get(i).get(0)), 0);
+            builder.add(new Term("", phrases.get(i).get(1)), 1);
+            PhraseQuery pq = builder.build();
+            ret.add(pq);
+        }
+        return ret;
+    }
+
 
     private ScoreDoc[] runQuery(BooleanQuery.Builder query_string) throws IOException, ParseException {
 
