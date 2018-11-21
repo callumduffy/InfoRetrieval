@@ -194,8 +194,8 @@ public class QueryHandler {
         ArrayList<ArrayList<String>> phrases = Utils.getPhrases(text);
         for(int i = 0; i < phrases.size(); i++) {
             PhraseQuery.Builder builder = new PhraseQuery.Builder();
-            builder.add(new Term("", phrases.get(i).get(0)), 0);
-            builder.add(new Term("", phrases.get(i).get(1)), 1);
+            builder.add(new Term("text", phrases.get(i).get(0)), 0);
+            builder.add(new Term("text", phrases.get(i).get(1)), 1);
             PhraseQuery pq = builder.build();
             ret.add(pq);
         }
