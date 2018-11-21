@@ -46,7 +46,6 @@ public class Utils {
         for(int i = 0; i < sentences.length; i++) {
             // for each sentence
             relevantSentence = true;
-            afterNegation = false;
 
             String[] words = sentences[i].trim().split("\\s+");
 
@@ -62,24 +61,19 @@ public class Utils {
             for(int j = 0; j < words.length; j++) {
                 if(!stopWordsForIrrelevantTerms.contains(words[j])) {
                     // the current word is not in the list of terms to filter out
-                    if(relevantSentence || afterNegation) {
-                        // add term to relevant terms
-                        if(!relevantTerms.contains(words[j]) && !words[j].equals("")) {
-                            // avoid duplicate and empty entries
-                            relevantTerms.add(words[j]);
-                        }
-                    }
-                    else {
+                    if(!relevantTerms.contains(words[j]) && !words[j].equals("")) {
+
                         if(words[j].equals("unless")) {
                             // terms appearing after 'unless' SHOULD be included in results
-                            afterNegation = true;
+                            relevantSentence = !relevantSentence;
                             continue;
                         }
+                        if(relevantSentence) {
+                            // add term to relevant terms
+                            relevantTerms.add(words[j]);
+                        }
                         else {
-                            if(!irrelevantTerms.contains(words[j]) && !words[j].equals("")) {
-                                // avoid duplicate and empty entries
-                                irrelevantTerms.add(words[j]);
-                            }
+                            irrelevantTerms.add(words[j]);
                         }
                     }
                 }
