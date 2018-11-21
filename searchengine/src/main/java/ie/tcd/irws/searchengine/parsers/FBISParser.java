@@ -32,8 +32,8 @@ public class FBISParser {
         ft.setStoreTermVectorPositions(true);
         ft.setStoreTermVectorOffsets(true);
         ft.setStoreTermVectorPayloads(true);
-
-
+        String text = "";
+        String title = "";
         for(String path : filepaths){
             file = new File(path);
 
@@ -45,7 +45,7 @@ public class FBISParser {
             for(Element docElement : jsoupDocs){
                 luceneDoc = new Document();
 
-                String text = docElement.getElementsByTag("TEXT").text();
+                text = docElement.getElementsByTag("TEXT").text();
                 /* where possible, get the main text.
                  * Removes some noise. E.g:
                  * Language: Macedonian
@@ -55,8 +55,9 @@ public class FBISParser {
                 if(text.contains("[Text]")) {
                     text = text.substring(text.indexOf("[Text]")+6);
                 }
-                luceneDoc.add(new Field("text", text, ft));
-                luceneDoc.add(new Field("title", docElement.getElementsByTag("TI").text(), ft));
+                title = docElement.getElementsByTag("TI").text();
+                luceneDoc.add(new Field("text", text + " "+ title, ft));
+                luceneDoc.add(new Field("title", title, ft));
 
                 //stringFields
                 luceneDoc.add(new StringField("docno", docElement.getElementsByTag("DOCNO").text(), Field.Store.YES));
