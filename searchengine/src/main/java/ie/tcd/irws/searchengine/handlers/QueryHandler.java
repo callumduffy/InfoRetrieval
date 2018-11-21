@@ -184,7 +184,11 @@ public class QueryHandler {
         return s;
     }
 
-
+    /**
+     * Method for constructing a list of phrase queries using the given text
+     * @param text
+     * @return ArrayList of PhraseQuery
+     */
     private ArrayList<PhraseQuery> constructPhraseQueries(String text) {
         ArrayList<PhraseQuery> ret = new ArrayList<>();
         ArrayList<ArrayList<String>> phrases = Utils.getPhrases(text);
