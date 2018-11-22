@@ -41,6 +41,7 @@ public class FTParser {
 		ft.setStoreTermVectorOffsets(true);
 		ft.setStoreTermVectorPayloads(true);
 		
+		String headline;
 		for(String path : filepaths){
 			
 			file = new File(path);
@@ -52,13 +53,14 @@ public class FTParser {
 			System.out.println("Parsing file: " + path);
 			
 			for(Element docElement : jsoupDocs){
+				headline=docElement.getElementsByTag("HEADLINE").text();
 				luceneDoc = new Document();
 				
 				luceneDoc.add(new Field("docno", docElement.getElementsByTag("DOCNO").text(), ft));
 				luceneDoc.add(new Field("profile", docElement.getElementsByTag("PROFILE").text(), ft));
 				luceneDoc.add(new Field("date", docElement.getElementsByTag("DATE").text(), ft));
-				luceneDoc.add(new Field("headline", docElement.getElementsByTag("HEADLINE").text(), ft));
-				luceneDoc.add(new Field("text", docElement.getElementsByTag("TEXT").text(), ft));
+				luceneDoc.add(new Field("headline", headline, ft));
+				luceneDoc.add(new Field("text", docElement.getElementsByTag("TEXT").text() + headline, ft));
 				luceneDoc.add(new Field("pub", docElement.getElementsByTag("PUB").text(), ft));
 				
 				//possibly make this a stringfield instead, so as not to index

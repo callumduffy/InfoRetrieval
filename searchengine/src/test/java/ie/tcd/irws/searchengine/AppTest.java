@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+import static ie.tcd.irws.searchengine.Utils.getPhrases;
+
 /**
  * Unit test for simple App.
  */
@@ -42,6 +44,16 @@ public class AppTest
     public void testApp()
     {
         assertTrue( true );
+    }
+
+    /**
+     * getPhrases TESTS
+     */
+    public void testGetPhrases() {
+        String desc = "What is the impact of poaching on the world's various wildlife preserves?";
+        ArrayList<ArrayList<String>> phrases = getPhrases(desc);
+        System.out.println(phrases.toString());
+        assertTrue(phrases.toString().equals("[[What, is], [is, the], [the, impact], [impact, of], [of, poaching], [poaching, on], [on, the], [the, worlds], [worlds, various], [various, wildlife], [wildlife, preserves]]"));
     }
 
 
