@@ -3,14 +3,15 @@ package ie.tcd.irws.searchengine.handlers;
 import ie.tcd.irws.searchengine.Utils;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.LowerCaseTokenizer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
+import org.apache.lucene.queryparser.flexible.core.util.StringUtils;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
@@ -120,37 +121,52 @@ public class QueryHandler {
         String nRelText = escapeSpecialCharacters(topicMap.get("nRel"));
 
         ArrayList<String> descTerms = Utils.getTerms(descText);
-        for(String term : descTerms)
-        {
-            long df = ireader.totalTermFreq(new Term("text", term));
-            int x = 5;
-        }
+        ArrayList<String> titleTerms = Utils.getTerms(titleText);
+        ArrayList<String> relTerms = Utils.getTerms(relText);
+        //ArrayList<String> nRelTerms = Utils.getTerms(nRelText);
 
+
+
+        String descString = String.join(" ", descTerms);
+        String titleString = String.join(" ", titleTerms);
+        String relString = String.join(" ", relTerms);
+        //String nRelString = String.join(" ", nRelTerms);
+
+
+        int docnum = ireader.numDocs();
+        Fields fields = MultiFields.getFields(ireader);
+        for (String field : fields) {
+            Terms terms = fields.terms(field);
+            TermsEnum termsEnum = terms.iterator();
+            while (termsEnum.next() != null) {
+                System.out.println("" + field + ":" + termsEnum.term().utf8ToString() + " " + termsEnum.totalTermFreq());
+            }
+        }
 
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
 
         QueryParser qp = new QueryParser("text", analyzer);
-        Query query1 = qp.parse(descText);
+        Query query1 = qp.parse(descString);
         query1 = new BoostQuery(query1, (float)1);
         
 
-        Query query2 = qp.parse(titleText);
+        Query query2 = qp.parse(titleString);
         query2 = new BoostQuery(query2, (float)1.5);
 
         //Relevant terms from narrative
         if (relText.length() > 0){
-            Query query3 = qp.parse(relText);
+            Query query3 = qp.parse(relString);
             query3 = new BoostQuery(query3, (float)0.5);
             bq.add(query3, BooleanClause.Occur.SHOULD);
         }
 
 
-
-        /* This piece of code brings down performance from 0.27 to 0.20, need to find alternative way 
-        of using non relevant terms
+        /*
+         //This piece of code brings down performance from 0.27 to 0.20, need to find alternative way
+        //of using non relevant terms
         //Not relevant terms from narrative
         if (nRelText.length() > 0){
-            Query query4 = qp.parse(nRelText);
+            Query query4 = qp.parse(nRelString);
             query4 = new BoostQuery(query4, (float)0.5);
             bq.add(query4, BooleanClause.Occur.MUST_NOT);
         }
