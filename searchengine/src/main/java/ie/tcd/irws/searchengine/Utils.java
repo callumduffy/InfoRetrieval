@@ -26,17 +26,37 @@ public class Utils {
         // read list of terms to remove/filter
         List<String> stopWordsForIrrelevantTerms = Arrays.asList(readFile(RELEVANT_TERMS_FILTER_PATH).toLowerCase().split("\n"));
 
+        // replace anachronyms
+        text = text.replace("U.S.", "United States");
+
         // lower case the text
-        text = text.toLowerCase().replace(",", " ");
+        text = text.toLowerCase();
 
         // remove special chars
+        //text = text.replace("\n", "");
+        text = text.replace(",", " ");
         text = text.replace("(", "").replace(")", "");
+        text = text.replace(":", " ");
+
+        // some weird uses of '-' in the narrs, this is just some clean up
+        text = text.replaceAll("-{2,}", " "); // replace multiple '-''s with one
+        text = text.replace(" -", "-").replace("- ", "-"); // sometimes hypenated words get seperated (especially at '\n')
+
 
         // remove special words
-        text = text.replace("i.e.", "");
+        text = text.replace("i.e.", " ");
+        text = text.replace("e.g.", " ");
+        text = text.replace("etc.", " ");
 
         // fix 401
         text = text.replace(";", ". ");
+
+        // fix alternative words e.g. damage/casualties
+        text = text.replace("/", " ");
+
+        // replace 'but' as a sentence break
+        text = text.replace(" but ", ". ");
+
 
         // split given text into sentences
         String[] sentences = text.split("\\.");
@@ -53,21 +73,23 @@ public class Utils {
                 // the current sentence is defining terms that SHOULD NOT appear in the results
                 relevantSentence = false;
 
-                if(sentences[i].contains("unrelated") || countSubstring(sentences[i], " not ") == 2) {
+                if(sentences[i].contains("unrelated") || sentences[i].contains(" without ") || countSubstring(sentences[i], " not ") == 2) {
                     // double negative, not occurs twice
                     relevantSentence = true;
                 }
             }
             for(int j = 0; j < words.length; j++) {
+
+                if(words[j].equals("unless")) {
+                    // terms appearing after 'unless' SHOULD be included in results
+                    relevantSentence = !relevantSentence;
+                    continue;
+                }
+
                 if(!stopWordsForIrrelevantTerms.contains(words[j])) {
                     // the current word is not in the list of terms to filter out
                     if(!relevantTerms.contains(words[j]) && !words[j].equals("")) {
 
-                        if(words[j].equals("unless")) {
-                            // terms appearing after 'unless' SHOULD be included in results
-                            relevantSentence = !relevantSentence;
-                            continue;
-                        }
                         if(relevantSentence) {
                             // add term to relevant terms
                             relevantTerms.add(words[j]);
