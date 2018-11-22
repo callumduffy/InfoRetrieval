@@ -39,7 +39,7 @@ public class SearchEngine
 	private static String FBIS_DIR = "corpus/fbis";
 	private static String INDEX_DIR = "index";
 	private static String QUERY_DIR = "corpus/topics.txt";
-	private static String TREC_PATH = "evaluation/results.txt";
+	private static String TREC_PATH = "searchengine/evaluation/results.txt";
 	private static int MAX_RESULTS = 1000;
 	
     public static void main( String[] args ) throws IOException, ParseException {

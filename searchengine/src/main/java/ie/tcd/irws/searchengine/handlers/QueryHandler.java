@@ -6,6 +6,8 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
@@ -116,6 +118,13 @@ public class QueryHandler {
         String titleText = escapeSpecialCharacters(topicMap.get("title"));
         String relText = escapeSpecialCharacters(topicMap.get("rel"));
         String nRelText = escapeSpecialCharacters(topicMap.get("nRel"));
+
+        ArrayList<String> descTerms = Utils.getTerms(descText);
+        for(String term : descTerms)
+        {
+            long df = ireader.totalTermFreq(new Term("text", term));
+            int x = 5;
+        }
 
 
         BooleanQuery.Builder bq = new BooleanQuery.Builder();

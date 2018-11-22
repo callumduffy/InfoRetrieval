@@ -10,7 +10,8 @@ import java.util.List;
 public class Utils {
 
     // path specifying the file containing terms to filter out during relevant/irrelevant term identification
-    final static String RELEVANT_TERMS_FILTER_PATH = "relevant-stop.txt";
+    final static String RELEVANT_TERMS_FILTER_PATH = "searchengine/relevant-stop.txt";
+    final static String STOP_WORD_PATH = "searchengine/cranfield/stop-word-list.txt";
 
 
     /**
@@ -117,6 +118,28 @@ public class Utils {
         ret.add(irrelevantTerms);
         return ret;
     }
+
+
+    /**
+     *  Method for returning a list of terms with stop words removed from a String
+     * @param text to analyse
+     * @return list of terms
+     */
+    public static ArrayList<String> getTerms(String text) throws IOException {
+        List<String> stopWords = Arrays.asList(readFile(STOP_WORD_PATH).toLowerCase().split("\r\n"));
+        text = text.toLowerCase();
+        String[] words = text.replaceAll("[^a-zA-Z ]", "").toLowerCase().split("\\s+");
+        ArrayList<String> terms = new ArrayList<>();
+
+        for(String word : words){
+            if(!stopWords.contains(word)) {
+                terms.add(word);
+            }
+        }
+
+        return terms;
+    }
+
 
     /**
      *  Method for reading a file into a string

@@ -16,7 +16,7 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 
 public class StandardStemAnalyzer extends StopwordAnalyzerBase {
 	
-  private static String StopFileLocation = "cranfield/stop-word-list.txt"; 
+  private static String StopFileLocation = "searchengine/cranfield/stop-word-list.txt";
 
   public StandardStemAnalyzer() throws IOException {
     super(StopwordAnalyzerBase.loadStopwordSet(Paths.get(StopFileLocation)));
