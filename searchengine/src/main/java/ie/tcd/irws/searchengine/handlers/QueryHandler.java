@@ -62,6 +62,8 @@ public class QueryHandler {
         } catch (IOException e) {
             throw new IOException("An error occurred while reading the index.");
         }
+
+
         isearcher = new IndexSearcher(ireader);
     }
 
@@ -76,13 +78,16 @@ public class QueryHandler {
 
     public List<ScoreDoc[]> query(List<HashMap<String, String>> queries, Boolean evaluate) throws IOException, ParseException
     {
+
+
         List<ScoreDoc[]>  results = new ArrayList<>();
 
         //PrintWriter for writing to results file
         PrintWriter pw = new PrintWriter(Paths.get(trecPath).toAbsolutePath().toString());
-        
+
+
         for (HashMap query : queries) {
-            
+
             BooleanQuery.Builder queryString = createQuery(query);
             ScoreDoc[] queryResults = runQuery(queryString);
             results.add(queryResults);
@@ -110,7 +115,8 @@ public class QueryHandler {
             docno
             *More to be added*
         */
-        
+
+
         String descText = escapeSpecialCharacters(topicMap.get("desc"));
         String narrText = escapeSpecialCharacters(topicMap.get("narr")); //To be seperated into should/should not
         String titleText = escapeSpecialCharacters(topicMap.get("title"));
@@ -118,15 +124,20 @@ public class QueryHandler {
         String nRelText = escapeSpecialCharacters(topicMap.get("nRel"));
 
 
+
+
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
 
         QueryParser qp = new QueryParser("text", analyzer);
+
         Query query1 = qp.parse(descText);
+
         query1 = new BoostQuery(query1, (float)1);
         
 
         Query query2 = qp.parse(titleText);
         query2 = new BoostQuery(query2, (float)1.5);
+
 
         //Relevant terms from narrative
         if (relText.length() > 0){
@@ -151,6 +162,7 @@ public class QueryHandler {
         //Build Boolean Query
         bq.add(query1, BooleanClause.Occur.SHOULD);
         bq.add(query2, BooleanClause.Occur.SHOULD);
+
         // add phrase queries
         ArrayList<PhraseQuery> phraseQueries = constructPhraseQueries(descText);
         for(int i = 0; i < phraseQueries.size(); i++) {
@@ -161,25 +173,25 @@ public class QueryHandler {
     }
 
     private String escapeSpecialCharacters(String s){
-        s = s.replace("\\", "\\\\");
-        s = s.replace("+", "\\+");
-        s = s.replace("-", "\\-");
-        s = s.replace("&&", "\\&&");
-        s = s.replace("||", "\\||");
-        s = s.replace("!", "\\!");
-        s = s.replace("(", "\\(");
-        s = s.replace(")", "\\)");
-        s = s.replace("[", "\\[");
-        s = s.replace("]", "\\]");
-        s = s.replace("{", "\\{");
-        s = s.replace("}", "\\}");
-        s = s.replace("^", "\\^");
-        s = s.replace("\"", "\\\"");
-        s = s.replace("~", "\\~");
-        s = s.replace("*", "\\*");
-        s = s.replace("?", "\\?");
-        s = s.replace(":", "\\:");
-        s = s.replace("/", "\\/");
+        s = s.replace("\\", "");
+        s = s.replace("+", "");
+        s = s.replace("-", "");
+        s = s.replace("&&", "");
+        s = s.replace("||", "");
+        s = s.replace("!", "");
+        s = s.replace("(", "");
+        s = s.replace(")", "");
+        s = s.replace("[", "");
+        s = s.replace("]", "");
+        s = s.replace("{", "");
+        s = s.replace("}", "");
+        s = s.replace("^", "");
+        s = s.replace("\"", "");
+        s = s.replace("~", "");
+        s = s.replace("*", "");
+        s = s.replace("?", "");
+        s = s.replace(":", "");
+        s = s.replace("/", "");
 
         return s;
     }
