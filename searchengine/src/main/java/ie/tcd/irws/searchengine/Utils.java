@@ -44,14 +44,15 @@ public class Utils {
         // read list of terms to remove/filter
         List<String> stopWordsForIrrelevantTerms = Arrays.asList(readFile(RELEVANT_TERMS_FILTER_PATH).toLowerCase().split("\n"));
 
-        // replace anachronyms
+        // replace anachronyms (avoids sentence splitting on '.')
         text = text.replace("U.S.", "United States");
 
         // lower case the text
         text = text.toLowerCase();
 
         // remove special chars
-        //text = text.replace("\n", "");
+        text = text.replace("\"", "");
+        text = text.replace("\n", " ");
         text = text.replace(",", " ");
         text = text.replace("(", "").replace(")", "");
         text = text.replace(":", " ");
@@ -80,7 +81,6 @@ public class Utils {
         String[] sentences = text.split("\\.");
 
         boolean relevantSentence; // determines if the current sentence contains RELEVANT terms (as opposed to NOT relevant terms)
-        boolean afterNegation; // e.g. 'unless' in not relevant sentence
         for(int i = 0; i < sentences.length; i++) {
             // for each sentence
             relevantSentence = true;
@@ -92,10 +92,11 @@ public class Utils {
                 relevantSentence = false;
 
                 if(sentences[i].contains("unrelated") || sentences[i].contains(" without ") || countSubstring(sentences[i], " not ") == 2) {
-                    // double negative, not occurs twice
+                    // double negative
                     relevantSentence = true;
                 }
             }
+
             for(int j = 0; j < words.length; j++) {
 
                 if(words[j].equals("unless")) {
@@ -112,7 +113,7 @@ public class Utils {
                             // add term to relevant terms
                             relevantTerms.add(words[j]);
                         }
-                        else {
+                        else if(!irrelevantTerms.contains(words[j])) {
                             irrelevantTerms.add(words[j]);
                         }
                     }
