@@ -125,7 +125,7 @@ public class QueryHandler {
 
         String descQueryString = createTermQueryString(descText, 100);
         String titleQueryString = createTermQueryString(titleText, 100);
-        String relTextQueryString = createTermQueryString(relText, 100);
+
 
 
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
@@ -141,24 +141,25 @@ public class QueryHandler {
 
         //Relevant terms from narrative
         if (relText.length() > 0){
+            String relTextQueryString = createTermQueryString(relText, 100);
             Query query3 = qp.parse(relText);
             query3 = new BoostQuery(query3, (float)0.5);
             bq.add(query3, BooleanClause.Occur.SHOULD);
         }
 
 
-        /*
+
          //This piece of code brings down performance from 0.27 to 0.20, need to find alternative way
         //of using non relevant terms
         //Not relevant terms from narrative
-        /*
+
         if (nRelText.length() > 0){
             String nRelQueryString = createTermQueryString(nRelText, 2);
             Query query4 = qp.parse(nRelQueryString);
             query4 = new BoostQuery(query4, (float)0.5);
             bq.add(query4, BooleanClause.Occur.MUST_NOT);
         }
-        */
+
 
 
 
