@@ -119,6 +119,7 @@ public class FRParser {
                         element.remove();
                     }
                 }
+                luceneDoc.add(new Field("title", text.getElementsByTag("DOCTITLE").text(), ft));
                 luceneDoc.add(new Field("text", text.text(), ft));
                 iwriter.addDocument(luceneDoc);
 

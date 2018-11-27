@@ -60,13 +60,13 @@ public class FTParser {
 				luceneDoc.add(new Field("profile", docElement.getElementsByTag("PROFILE").text(), ft));
 				luceneDoc.add(new Field("date", docElement.getElementsByTag("DATE").text(), ft));
 				luceneDoc.add(new Field("headline", headline, ft));
+				luceneDoc.add(new Field("title", headline, ft));				
 				luceneDoc.add(new Field("text", docElement.getElementsByTag("TEXT").text() + headline, ft));
 				luceneDoc.add(new Field("pub", docElement.getElementsByTag("PUB").text(), ft));
 				
 				//possibly make this a stringfield instead, so as not to index
 				luceneDoc.add(new Field("page", docElement.getElementsByTag("PAGE").text(), ft));
 				
-				System.out.println("Adding doc: " + docElement.getElementsByTag("DOCNO").text());
 
 				iwriter.addDocument(luceneDoc);
 			}

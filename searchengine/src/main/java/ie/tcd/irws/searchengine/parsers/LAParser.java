@@ -47,7 +47,7 @@ public class LAParser {
                     jsoupDoc = Jsoup.parse(file, "UTF-8");
                     
 
-
+                    System.out.println("Adding file: " + path);
                     Elements jsoupDocs = jsoupDoc.getElementsByTag("DOC");
                     for(Element docElement : jsoupDocs){
 
@@ -64,9 +64,10 @@ public class LAParser {
                         luceneDoc.add(new Field("byline", docElement.getElementsByTag("BYLINE").text(), ft));
                         luceneDoc.add(new Field("text", docElement.getElementsByTag("TEXT").text()+" "+headline+" "+graphic+" "+subject, ft));
                         luceneDoc.add(new Field("graphic", graphic, ft));
-                        luceneDoc.add(new Field("subject ", subject, ft));
+                        luceneDoc.add(new Field("subject", subject, ft));
+                        luceneDoc.add(new Field("title", subject+ " " + headline, ft));
 
-                        System.out.println("Adding doc: " + docElement.getElementsByTag("DOCNO").text());
+                        
 
                         iwriter.addDocument(luceneDoc);
                     }
