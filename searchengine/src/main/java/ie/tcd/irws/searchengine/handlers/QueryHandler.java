@@ -38,14 +38,13 @@ public class QueryHandler {
     private DirectoryReader ireader;
     private IndexSearcher isearcher;
 
+
     public QueryHandler(String t_indexDirectory, Analyzer t_analyzer, int t_maxResults , String t_trecPath) throws IOException {
         indexDirectoryPath = t_indexDirectory;
         analyzer = t_analyzer;
         maxResults = t_maxResults;
         trecPath = t_trecPath;
         initQueryHandler();
-        
-        
     }
 
     private void initQueryHandler() throws IOException
@@ -62,27 +61,37 @@ public class QueryHandler {
         } catch (IOException e) {
             throw new IOException("An error occurred while reading the index.");
         }
+
+
         isearcher = new IndexSearcher(ireader);
     }
 
     public void setMaxResults(int newMaxResults) {
         maxResults = newMaxResults;
+
     }
 
     public void setSimilarityMethod(Similarity similarity)
     {
         isearcher.setSimilarity(similarity);
+
     }
 
     public List<ScoreDoc[]> query(List<HashMap<String, String>> queries, Boolean evaluate) throws IOException, ParseException
     {
+
+
+
         List<ScoreDoc[]>  results = new ArrayList<>();
+
+
 
         //PrintWriter for writing to results file
         PrintWriter pw = new PrintWriter(Paths.get(trecPath).toAbsolutePath().toString());
-        
+
+
         for (HashMap query : queries) {
-            
+
             BooleanQuery.Builder queryString = createQuery(query);
             ScoreDoc[] queryResults = runQuery(queryString);
             results.add(queryResults);
@@ -103,6 +112,7 @@ public class QueryHandler {
 
     private BooleanQuery.Builder createQuery(HashMap<String, String> topicMap) throws ParseException, IOException
     {
+
         /*
         Field Names:
             text
@@ -111,7 +121,8 @@ public class QueryHandler {
             title
             *More to be added*
         */
-        
+
+
         String descText = escapeSpecialCharacters(topicMap.get("desc"));
         String narrText = escapeSpecialCharacters(topicMap.get("narr")); //To be seperated into should/should not
         String titleText = escapeSpecialCharacters(topicMap.get("title"));
@@ -130,6 +141,7 @@ public class QueryHandler {
         Query query2 = qp1.parse(titleText);
         query2 = new BoostQuery(query2, (float)1.5);
 
+
         //Relevant terms from narrative
         if (relText.length() > 0){
             Query query3 = qp1.parse(relText);
@@ -138,9 +150,9 @@ public class QueryHandler {
         }
 
 
-
-        /* This piece of code brings down performance from 0.27 to 0.20, need to find alternative way 
-        of using non relevant terms
+/*
+        //This piece of code brings down performance from 0.27 to 0.20, need to find alternative way
+       // of using non relevant terms
         //Not relevant terms from narrative
         if (nRelText.length() > 0){
             Query query4 = qp1.parse(nRelText);
@@ -157,6 +169,7 @@ public class QueryHandler {
         //query title - document title
         Query query6 = qp2.parse(titleText);
         query6 = new BoostQuery(query6, (float)0.5);
+
 
 
         //Build Boolean Query
@@ -179,30 +192,45 @@ public class QueryHandler {
         for(int i = 0; i < phraseQueries.size(); i++) {
             bq.add(new BoostQuery(phraseQueries.get(i), (float)2), BooleanClause.Occur.SHOULD);
         }
-        
+
+
+
+/*        Constructs name queries and boosts them but it has no effect
+ //       ArrayList<PhraseQuery> nameQuery = constructNameQuery(descText);
+
+        for(int i = 0; i < nameQuery.size(); i++) {
+            Query nQuery = nameQuery.get(i);
+            nQuery = new BoostQuery(nQuery, (float)2);
+            bq.add(nQuery, BooleanClause.Occur.MUST_NOT);
+            System.out.println(nameQuery.get(i));
+        }
+
+*/
         return bq;
+
+
     }
 
     private String escapeSpecialCharacters(String s){
-        s = s.replace("\\", "\\\\");
-        s = s.replace("+", "\\+");
-        s = s.replace("-", "\\-");
-        s = s.replace("&&", "\\&&");
-        s = s.replace("||", "\\||");
-        s = s.replace("!", "\\!");
-        s = s.replace("(", "\\(");
-        s = s.replace(")", "\\)");
-        s = s.replace("[", "\\[");
-        s = s.replace("]", "\\]");
-        s = s.replace("{", "\\{");
-        s = s.replace("}", "\\}");
-        s = s.replace("^", "\\^");
-        s = s.replace("\"", "\\\"");
-        s = s.replace("~", "\\~");
-        s = s.replace("*", "\\*");
-        s = s.replace("?", "\\?");
-        s = s.replace(":", "\\:");
-        s = s.replace("/", "\\/");
+        s = s.replace("\\", "");
+        s = s.replace("+", "");
+        s = s.replace("-", "");
+        s = s.replace("&&", "");
+        s = s.replace("||", "");
+        s = s.replace("!", "");
+        s = s.replace("(", "");
+        s = s.replace(")", "");
+        s = s.replace("[", "");
+        s = s.replace("]", "");
+        s = s.replace("{", "");
+        s = s.replace("}", "");
+        s = s.replace("^", "");
+        s = s.replace("\"", "");
+        s = s.replace("~", "");
+        s = s.replace("*", "");
+        s = s.replace("?", "");
+        s = s.replace(":", "");
+        s = s.replace("/", "");
 
         return s;
     }
@@ -223,6 +251,28 @@ public class QueryHandler {
             PhraseQuery pq = builder.build();
             ret.add(pq);
         }
+
+        return ret;
+    }
+
+    private ArrayList<PhraseQuery> constructNameQuery(String text) {
+
+        ArrayList<PhraseQuery> ret = new ArrayList<>();
+        String[] name = text.trim().replaceAll("[^A-Za-z0-9 ]", "").split("\\s+");
+
+
+        for (int i = 0; i < name.length; i++) {
+            char charCheck = name[i].charAt(0);
+            boolean isUpperCase = Character.isUpperCase(charCheck);
+
+            if (isUpperCase == true && !name[i].equals("What")&& !name[i].equals("Give")&& !name[i].equals("Provide")&& !name[i].equals("The")&& !name[i].equals("Three") && !name[i].equals("Am")&& !name[i].equals("Where")&& !name[i].equals("Why")&& !name[i].equals("Who")&& !name[i].equals("When")&& !name[i].equals("How")&& !name[i].equals("Find")&& !name[i].equals("In")&& !name[i].equals("Do")&& !name[i].equals("Identify")&& !name[i].equals("Is")) {
+                PhraseQuery.Builder builder = new PhraseQuery.Builder();
+                builder.add(new Term("text",name[i]));
+                PhraseQuery pq = builder.build();
+                ret.add(pq);
+            }
+
+        }
         return ret;
     }
 
@@ -230,12 +280,18 @@ public class QueryHandler {
     private ScoreDoc[] runQuery(BooleanQuery.Builder query_string) throws IOException, ParseException {
 
         ScoreDoc[] hits;
+
         try {
             hits = isearcher.search(query_string.build(), maxResults).scoreDocs;
+
         } catch (IOException e) {
             throw new IOException("An error occurred while searching the index.");
         }
+      
+
         return hits;
     }
+
+
 
 }
