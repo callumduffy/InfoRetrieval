@@ -135,7 +135,7 @@ public class QueryHandler {
         QueryParser qp1 = new QueryParser("text", analyzer);
         //Query text - Document text
         Query query1 = qp1.parse(descText);
-        query1 = new BoostQuery(query1, (float)1);
+        query1 = new BoostQuery(query1, (float)0.5);
         
         //Query title - Document text
         Query query2 = qp1.parse(titleText);
@@ -183,14 +183,13 @@ public class QueryHandler {
         // add phrase queries for phraseLength of 2
         ArrayList<PhraseQuery> phraseQueries = constructPhraseQueries(descText, 2);
         for(int i = 0; i < phraseQueries.size(); i++) {
-            bq.add(new BoostQuery(phraseQueries.get(i), (float)2), BooleanClause.Occur.SHOULD);
+            bq.add(new BoostQuery(phraseQueries.get(i), (float)2.5), BooleanClause.Occur.SHOULD);
         }
 
         // add phrase queries for phraseLength of 3
-        phraseQueries = constructPhraseQueries(titleText, 2);
-        System.out.println("phraseQueriesSize: " + phraseQueries.size());
+        phraseQueries = constructPhraseQueries(descText, 3);
         for(int i = 0; i < phraseQueries.size(); i++) {
-            bq.add(new BoostQuery(phraseQueries.get(i), (float)2), BooleanClause.Occur.SHOULD);
+            bq.add(new BoostQuery(phraseQueries.get(i), (float)2.5), BooleanClause.Occur.SHOULD);
         }
 
 
