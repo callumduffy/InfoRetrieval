@@ -54,6 +54,7 @@ public class SearchEngine
 		if (buildIndex.equals("y")){
 			buildIndex(analyzer);
 		}
+		
 		QueryHandler handler = new QueryHandler(Paths.get(INDEX_DIR).toAbsolutePath().toString(), analyzer, MAX_RESULTS, TREC_PATH);
 		handler.setSimilarityMethod(new BM25Similarity());
 		QueryParser p = new QueryParser(Paths.get(QUERY_DIR).toAbsolutePath().toString());
@@ -120,7 +121,7 @@ public class SearchEngine
 		ArrayList<String> _result = new ArrayList<String>(Arrays.asList(input));
 		
 		for(String element: input){
-			if (element.toLowerCase().contains("read")){
+			if (element.toLowerCase().contains("read") || element.toLowerCase().contains("ds_store")){
 				_result.remove(element);
 			}
 		}

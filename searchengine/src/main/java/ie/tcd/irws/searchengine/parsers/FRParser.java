@@ -84,19 +84,17 @@ public class FRParser {
 		ft.setStoreTermVectorOffsets(true);
 		ft.setStoreTermVectorPayloads(true);
         
-        int counter = 1;
 		for(String path : filepaths){
             
 			file = new File(path);
 			jsoupDoc = Jsoup.parse(file, "UTF-8");
 			
 			Elements jsoupDocs = jsoupDoc.getElementsByTag("DOC");
-			
+            System.out.println("Indexing file: " +  path);
+
 
 			for(Element docElement : jsoupDocs){
                 docno = docElement.getElementsByTag("DOCNO").text();
-                System.out.println("Indexing document " + docno + " number " + counter + " out of 55632 fr docs");
-                counter++;
                 luceneDoc = new Document();
                 luceneDoc.add(new Field("docno", docno, ft));
 
