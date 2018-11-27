@@ -17,6 +17,9 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.search.BoostQuery;
 
+
+import org.tartarus.snowball.ext.EnglishStemmer;
+
 //import javax.rmi.CORBA.Util;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -119,18 +122,14 @@ public class QueryHandler {
         String relText = escapeSpecialCharacters(topicMap.get("rel"));
         String nRelText = escapeSpecialCharacters(topicMap.get("nRel"));
 
-        ArrayList<String> descTerms = Utils.getTerms(descText);
-        for(String term : descTerms)
-        {
-            long df = ireader.totalTermFreq(new Term("text", term));
-            int x = 5;
-        }
-
+        String descQueryString = createTermQueryString(descText, 100);
+        String titleQueryString = createTermQueryString(titleText, 100);
+        String relTextQueryString = createTermQueryString(relText, 100);
 
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
 
         QueryParser qp = new QueryParser("text", analyzer);
-        Query query1 = qp.parse(descText);
+        Query query1 = qp.parse(descQueryString);
         query1 = new BoostQuery(query1, (float)1);
         
 
@@ -146,15 +145,18 @@ public class QueryHandler {
 
 
 
-        /* This piece of code brings down performance from 0.27 to 0.20, need to find alternative way 
-        of using non relevant terms
+        // This piece of code brings down performance from 0.27 to 0.20, need to find alternative way
+        //of using non relevant terms
         //Not relevant terms from narrative
+        /*
         if (nRelText.length() > 0){
-            Query query4 = qp.parse(nRelText);
+            String nRelQueryString = createTermQueryString(nRelText, 2);
+            Query query4 = qp.parse(nRelQueryString);
             query4 = new BoostQuery(query4, (float)0.5);
             bq.add(query4, BooleanClause.Occur.MUST_NOT);
         }
         */
+
 
 
         //Build Boolean Query
@@ -223,4 +225,24 @@ public class QueryHandler {
         return hits;
     }
 
+    private String createTermQueryString(String text, int termLimit) throws IOException
+    {
+        text = text.trim();
+        EnglishStemmer english = new EnglishStemmer();
+        DefaultSimilarity sim = new DefaultSimilarity();
+        ArrayList<String> terms = Utils.getTerms(text);
+        ArrayList<Double> idfs = new ArrayList<>();
+        int numDocs = ireader.numDocs();
+        for(String term : terms)
+        {
+            english.setCurrent(term);
+            english.stem();
+            String stemmedTerm = english.getCurrent();
+            long df = ireader.totalTermFreq(new Term("text", stemmedTerm));
+            double idf = sim.idf((int)df, numDocs);
+            idfs.add(idf);
+        }
+
+        return Utils.pickUniqueTerms(terms,idfs,termLimit);
+    }
 }

@@ -1,10 +1,13 @@
 package ie.tcd.irws.searchengine;
 
+import org.apache.lucene.queryparser.flexible.core.util.StringUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Utils {
@@ -150,6 +153,20 @@ public class Utils {
     private static String readFile(String filePath) throws IOException {
         return new String(Files.readAllBytes(Paths.get(filePath)));
     }
+
+    public static String pickUniqueTerms(ArrayList<String> terms, ArrayList<Double> idfs, int termLimt){
+        while(terms.size() > termLimt)
+        {
+            int minIndex = idfs.indexOf(Collections.min(idfs));
+            idfs.remove(minIndex);
+            terms.remove(minIndex);
+        }
+
+        return String.join(" ", terms);
+
+    }
+
+
 
     private static int countSubstring(String str, String substr) {
         int lastIndex = 0;
