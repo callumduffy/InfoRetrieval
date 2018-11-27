@@ -3,14 +3,15 @@ package ie.tcd.irws.searchengine.handlers;
 import ie.tcd.irws.searchengine.Utils;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.LowerCaseTokenizer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
+import org.apache.lucene.queryparser.flexible.core.util.StringUtils;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
@@ -126,10 +127,12 @@ public class QueryHandler {
         String titleQueryString = createTermQueryString(titleText, 100);
         String relTextQueryString = createTermQueryString(relText, 100);
 
+
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
 
         QueryParser qp = new QueryParser("text", analyzer);
         Query query1 = qp.parse(descQueryString);
+
         query1 = new BoostQuery(query1, (float)1);
         
 
@@ -144,8 +147,8 @@ public class QueryHandler {
         }
 
 
-
-        // This piece of code brings down performance from 0.27 to 0.20, need to find alternative way
+        /*
+         //This piece of code brings down performance from 0.27 to 0.20, need to find alternative way
         //of using non relevant terms
         //Not relevant terms from narrative
         /*
