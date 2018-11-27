@@ -18,13 +18,15 @@ public class Utils {
      * @param text to delimit into phrases
      * @return ArrayList of phrase Strings (special chars removed! (e.g '?', '!', "'"))
      */
-    public static ArrayList<ArrayList<String>> getPhrases(String text) {
+    public static ArrayList<ArrayList<String>> getPhrases(String text, Integer phraseLength) {
         ArrayList<ArrayList<String>> ret = new ArrayList<>();
         String[] terms = text.trim().replaceAll("[^A-Za-z0-9 ]", "").split("\\s+");
-        for(int i = 0; i < terms.length-1; i++) {
+        for(int i = 0; i < terms.length-(phraseLength - 1); i++) {
             ArrayList<String> temp = new ArrayList<>();
-            temp.add(terms[i]);
-            temp.add(terms[i+1]);
+            for(int j = 0; j < phraseLength; j++){
+                temp.add(terms[i+j]);
+            }
+            
             ret.add(temp);
         }
         return ret;
