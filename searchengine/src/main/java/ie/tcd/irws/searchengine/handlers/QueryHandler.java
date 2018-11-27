@@ -118,6 +118,7 @@ public class QueryHandler {
             text
             date
             docno
+            title
             *More to be added*
         */
 
@@ -131,20 +132,20 @@ public class QueryHandler {
 
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
 
-        QueryParser qp = new QueryParser("text", analyzer);
-
-
-        Query query1 = qp.parse(descText);
-        query1 = new BoostQuery(query1, (float).5);
-
-        Query query2 = qp.parse(titleText);
+        QueryParser qp1 = new QueryParser("text", analyzer);
+        //Query text - Document text
+        Query query1 = qp1.parse(descText);
+        query1 = new BoostQuery(query1, (float)0.5);
+        
+        //Query title - Document text
+        Query query2 = qp1.parse(titleText);
         query2 = new BoostQuery(query2, (float)1.5);
 
 
         //Relevant terms from narrative
         if (relText.length() > 0){
-            Query query3 = qp.parse(relText);
-            query3 = new BoostQuery(query3, (float).5);
+            Query query3 = qp1.parse(relText);
+            query3 = new BoostQuery(query3, (float)0.5);
             bq.add(query3, BooleanClause.Occur.SHOULD);
         }
 
@@ -154,24 +155,41 @@ public class QueryHandler {
        // of using non relevant terms
         //Not relevant terms from narrative
         if (nRelText.length() > 0){
-            Query query4 = qp.parse(nRelText);
-           // System.out.println(query4);
-            query4 = new BoostQuery(query4, (float).5);
+            Query query4 = qp1.parse(nRelText);
+            query4 = new BoostQuery(query4, (float)0.5);
             bq.add(query4, BooleanClause.Occur.MUST_NOT);
         }
+        */
 
-*/
+        //query description - document title
+        QueryParser qp2 = new QueryParser("title", analyzer);
+        Query query5 = qp2.parse(descText);
+        query5 = new BoostQuery(query5, (float)0.5);
+        
+        //query title - document title
+        Query query6 = qp2.parse(titleText);
+        query6 = new BoostQuery(query6, (float)0.5);
+
+
+
         //Build Boolean Query
         bq.add(query1, BooleanClause.Occur.SHOULD);
         bq.add(query2, BooleanClause.Occur.SHOULD);
 
-        // add phrase queries
-        ArrayList<PhraseQuery> phraseQueries = constructPhraseQueries(descText);
+        //These queries seem to damage performance
+        //bq.add(query5, BooleanClause.Occur.SHOULD);
+        //bq.add(query6, BooleanClause.Occur.SHOULD);
 
+        // add phrase queries for phraseLength of 2
+        ArrayList<PhraseQuery> phraseQueries = constructPhraseQueries(descText, 2);
         for(int i = 0; i < phraseQueries.size(); i++) {
-            Query QP = phraseQueries.get(i);
-            QP = new BoostQuery(QP, (float)2.5);
-            bq.add(QP, BooleanClause.Occur.SHOULD);
+            bq.add(new BoostQuery(phraseQueries.get(i), (float)2.5), BooleanClause.Occur.SHOULD);
+        }
+
+        // add phrase queries for phraseLength of 3
+        phraseQueries = constructPhraseQueries(descText, 3);
+        for(int i = 0; i < phraseQueries.size(); i++) {
+            bq.add(new BoostQuery(phraseQueries.get(i), (float)2.5), BooleanClause.Occur.SHOULD);
         }
 
 
@@ -221,15 +239,14 @@ public class QueryHandler {
      * @param text
      * @return ArrayList of PhraseQuery
      */
-    private ArrayList<PhraseQuery> constructPhraseQueries(String text) {
-
+    private ArrayList<PhraseQuery> constructPhraseQueries(String text, int phraseLength) {
         ArrayList<PhraseQuery> ret = new ArrayList<>();
-        ArrayList<ArrayList<String>> phrases = Utils.getPhrases(text);
-
+        ArrayList<ArrayList<String>> phrases = Utils.getPhrases(text, phraseLength);
         for(int i = 0; i < phrases.size(); i++) {
             PhraseQuery.Builder builder = new PhraseQuery.Builder();
-            builder.add(new Term("text", phrases.get(i).get(0)), 0);
-            builder.add(new Term("text", phrases.get(i).get(1)), 1);
+            for(int j = 0; j < phraseLength; j++){
+                builder.add(new Term("text", phrases.get(i).get(j)), j);
+            }
             PhraseQuery pq = builder.build();
             ret.add(pq);
         }
