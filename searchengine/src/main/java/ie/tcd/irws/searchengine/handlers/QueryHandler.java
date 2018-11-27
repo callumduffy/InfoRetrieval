@@ -38,14 +38,13 @@ public class QueryHandler {
     private DirectoryReader ireader;
     private IndexSearcher isearcher;
 
+
     public QueryHandler(String t_indexDirectory, Analyzer t_analyzer, int t_maxResults , String t_trecPath) throws IOException {
         indexDirectoryPath = t_indexDirectory;
         analyzer = t_analyzer;
         maxResults = t_maxResults;
         trecPath = t_trecPath;
         initQueryHandler();
-        
-        
     }
 
     private void initQueryHandler() throws IOException
@@ -69,18 +68,23 @@ public class QueryHandler {
 
     public void setMaxResults(int newMaxResults) {
         maxResults = newMaxResults;
+
     }
 
     public void setSimilarityMethod(Similarity similarity)
     {
         isearcher.setSimilarity(similarity);
+
     }
 
     public List<ScoreDoc[]> query(List<HashMap<String, String>> queries, Boolean evaluate) throws IOException, ParseException
     {
 
 
+
         List<ScoreDoc[]>  results = new ArrayList<>();
+
+
 
         //PrintWriter for writing to results file
         PrintWriter pw = new PrintWriter(Paths.get(trecPath).toAbsolutePath().toString());
@@ -108,6 +112,7 @@ public class QueryHandler {
 
     private BooleanQuery.Builder createQuery(HashMap<String, String> topicMap) throws ParseException, IOException
     {
+
         /*
         Field Names:
             text
@@ -124,16 +129,13 @@ public class QueryHandler {
         String nRelText = escapeSpecialCharacters(topicMap.get("nRel"));
 
 
-
-
         BooleanQuery.Builder bq = new BooleanQuery.Builder();
 
         QueryParser qp = new QueryParser("text", analyzer);
 
-        Query query1 = qp.parse(descText);
 
-        query1 = new BoostQuery(query1, (float)1);
-        
+        Query query1 = qp.parse(descText);
+        query1 = new BoostQuery(query1, (float).5);
 
         Query query2 = qp.parse(titleText);
         query2 = new BoostQuery(query2, (float)1.5);
@@ -142,34 +144,52 @@ public class QueryHandler {
         //Relevant terms from narrative
         if (relText.length() > 0){
             Query query3 = qp.parse(relText);
-            query3 = new BoostQuery(query3, (float)0.5);
+            query3 = new BoostQuery(query3, (float).5);
             bq.add(query3, BooleanClause.Occur.SHOULD);
         }
 
 
-
-        /* This piece of code brings down performance from 0.27 to 0.20, need to find alternative way 
-        of using non relevant terms
+/*
+        //This piece of code brings down performance from 0.27 to 0.20, need to find alternative way
+       // of using non relevant terms
         //Not relevant terms from narrative
         if (nRelText.length() > 0){
             Query query4 = qp.parse(nRelText);
-            query4 = new BoostQuery(query4, (float)0.5);
+           // System.out.println(query4);
+            query4 = new BoostQuery(query4, (float).5);
             bq.add(query4, BooleanClause.Occur.MUST_NOT);
         }
-        */
 
-
+*/
         //Build Boolean Query
         bq.add(query1, BooleanClause.Occur.SHOULD);
         bq.add(query2, BooleanClause.Occur.SHOULD);
 
         // add phrase queries
         ArrayList<PhraseQuery> phraseQueries = constructPhraseQueries(descText);
+
         for(int i = 0; i < phraseQueries.size(); i++) {
-            bq.add(phraseQueries.get(i), BooleanClause.Occur.SHOULD);
+            Query QP = phraseQueries.get(i);
+            QP = new BoostQuery(QP, (float)2.5);
+            bq.add(QP, BooleanClause.Occur.SHOULD);
         }
-        
+
+
+
+/*        Constructs name queries and boosts them but it has no effect
+ //       ArrayList<PhraseQuery> nameQuery = constructNameQuery(descText);
+
+        for(int i = 0; i < nameQuery.size(); i++) {
+            Query nQuery = nameQuery.get(i);
+            nQuery = new BoostQuery(nQuery, (float)2);
+            bq.add(nQuery, BooleanClause.Occur.MUST_NOT);
+            System.out.println(nameQuery.get(i));
+        }
+
+*/
         return bq;
+
+
     }
 
     private String escapeSpecialCharacters(String s){
@@ -202,14 +222,38 @@ public class QueryHandler {
      * @return ArrayList of PhraseQuery
      */
     private ArrayList<PhraseQuery> constructPhraseQueries(String text) {
+
         ArrayList<PhraseQuery> ret = new ArrayList<>();
         ArrayList<ArrayList<String>> phrases = Utils.getPhrases(text);
+
         for(int i = 0; i < phrases.size(); i++) {
             PhraseQuery.Builder builder = new PhraseQuery.Builder();
             builder.add(new Term("text", phrases.get(i).get(0)), 0);
             builder.add(new Term("text", phrases.get(i).get(1)), 1);
             PhraseQuery pq = builder.build();
             ret.add(pq);
+        }
+
+        return ret;
+    }
+
+    private ArrayList<PhraseQuery> constructNameQuery(String text) {
+
+        ArrayList<PhraseQuery> ret = new ArrayList<>();
+        String[] name = text.trim().replaceAll("[^A-Za-z0-9 ]", "").split("\\s+");
+
+
+        for (int i = 0; i < name.length; i++) {
+            char charCheck = name[i].charAt(0);
+            boolean isUpperCase = Character.isUpperCase(charCheck);
+
+            if (isUpperCase == true && !name[i].equals("What")&& !name[i].equals("Give")&& !name[i].equals("Provide")&& !name[i].equals("The")&& !name[i].equals("Three") && !name[i].equals("Am")&& !name[i].equals("Where")&& !name[i].equals("Why")&& !name[i].equals("Who")&& !name[i].equals("When")&& !name[i].equals("How")&& !name[i].equals("Find")&& !name[i].equals("In")&& !name[i].equals("Do")&& !name[i].equals("Identify")&& !name[i].equals("Is")) {
+                PhraseQuery.Builder builder = new PhraseQuery.Builder();
+                builder.add(new Term("text",name[i]));
+                PhraseQuery pq = builder.build();
+                ret.add(pq);
+            }
+
         }
         return ret;
     }
@@ -218,12 +262,18 @@ public class QueryHandler {
     private ScoreDoc[] runQuery(BooleanQuery.Builder query_string) throws IOException, ParseException {
 
         ScoreDoc[] hits;
+
         try {
             hits = isearcher.search(query_string.build(), maxResults).scoreDocs;
+
         } catch (IOException e) {
             throw new IOException("An error occurred while searching the index.");
         }
+      
+
         return hits;
     }
+
+
 
 }
