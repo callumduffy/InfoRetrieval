@@ -17,6 +17,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.*;
 
 
@@ -56,7 +57,8 @@ public class SearchEngine
 		}
 		
 		QueryHandler handler = new QueryHandler(Paths.get(INDEX_DIR).toAbsolutePath().toString(), analyzer, MAX_RESULTS, TREC_PATH);
-		handler.setSimilarityMethod(new BM25Similarity());
+		//handler.setSimilarityMethod(new BM25Similarity());
+		handler.setSimilarityMethod(new LMDirichletSimilarity(100));
 		QueryParser p = new QueryParser(Paths.get(QUERY_DIR).toAbsolutePath().toString());
 		try{
 			results = handler.query(p.loadTopics(), true);
